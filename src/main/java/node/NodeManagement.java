@@ -51,7 +51,7 @@ public class NodeManagement {
                             .serviceId(node.getServiceId())
                             .term(node.getTerm().get())
                             .lastLogIndex(node.getLogMachine().getLastIndex())
-                            .lastCommitIndex(node.getStateMachine().getFsm().getLastIndex())
+                            .lastCommitIndex(node.getStateMachine().getLastIndex())
                             .build()));
                 }
 

@@ -41,9 +41,14 @@ public class RaftTest {
 
         //4、查询随意node里面的值是否一致
         System.out.println("---状态机---");
-        System.out.println(one.getStateMachine().getFsm().getElement(1));
-        System.out.println(two.getStateMachine().getFsm().getElement(1));
-        System.out.println(three.getStateMachine().getFsm().getElement(1));
+        System.out.println(one.getStateMachine().getElement(1));
+        System.out.println(two.getStateMachine().getElement(1));
+        System.out.println(three.getStateMachine().getElement(1));
+
+        System.out.println("---日志最后条目---");
+        System.out.println(one.getLogMachine().getLastIndex());
+        System.out.println(two.getLogMachine().getLastIndex());
+        System.out.println(three.getLogMachine().getLastIndex());
 
         one.addSomeThing("666");
 
@@ -58,9 +63,14 @@ public class RaftTest {
 
         //4、查询随意node里面的值是否一致
         System.out.println("---状态机---");
-        System.out.println(one.getStateMachine().getFsm().getElement(2));
-        System.out.println(two.getStateMachine().getFsm().getElement(2));
-        System.out.println(three.getStateMachine().getFsm().getElement(2));
+        System.out.println(one.getStateMachine().getElement(2));
+        System.out.println(two.getStateMachine().getElement(2));
+        System.out.println(three.getStateMachine().getElement(2));
+
+        System.out.println("---日志最后条目---");
+        System.out.println(one.getLogMachine().getLastIndex());
+        System.out.println(two.getLogMachine().getLastIndex());
+        System.out.println(three.getLogMachine().getLastIndex());
     }
 
 }

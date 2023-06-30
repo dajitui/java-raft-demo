@@ -184,10 +184,13 @@ public class Node {
                     .build());
 
             for (Node node : nodeManagement.getFollowerList(serviceId)) {
+                System.out.println("给跟随者发送信息：" + node.serviceId + "，数据：" + data);
+
                 SimpleRpc.sendResponse(node.getServiceId(), "e" + JSON.toJSONString(ElementPack
                         .builder()
                         .serviceId(serviceId)
                         .lastLogIndex(logMachine.getLastIndex())
+                        .term(term.get())
                         .data(data)
                         .build()));
             }
@@ -202,6 +205,7 @@ public class Node {
 
             SimpleRpc.sendResponse(leaderServiceId, "e" + JSON.toJSONString(ElementPack
                     .builder()
+                    .forward(true)
                     .serviceId(serviceId)
                     .term(term.get())
                     .lastLogIndex(logMachine.getLastIndex())
@@ -252,8 +256,8 @@ public class Node {
             });
         }
 
-        if (heartBeatPack.getLastCommitIndex() > stateMachine.getFsm().getLastIndex()) {
-            for (long i = stateMachine.getFsm().getLastIndex() + 1; i <= heartBeatPack.getLastCommitIndex(); i++) {
+        if (heartBeatPack.getLastCommitIndex() > stateMachine.getLastIndex()) {
+            for (long i = stateMachine.getLastIndex() + 1; i <= heartBeatPack.getLastCommitIndex(); i++) {
                 //刷到状态机
                 stateMachine.apply(logMachine.getLog((int) i));
             }
@@ -349,7 +353,7 @@ public class Node {
                         .builder()
                         .serviceId(serviceId)
                         .leaderDataList(leaderDataList)
-                        .lastCommitIndex(stateMachine.getFsm().getLastIndex())
+                        .lastCommitIndex(stateMachine.getLastIndex())
                         .build();
 
                 //回传follower节点自行对照
@@ -379,8 +383,14 @@ public class Node {
         }
 
         //等心跳再同步数据先，再插入
-        if (logMachine.getLastIndex() != elementPack.getLastLogIndex()) {
-            return;
+        if (elementPack.isForward()) {
+            if (logMachine.getLastIndex() > elementPack.getLastLogIndex()) {
+                return;
+            }
+        }else {
+            if (logMachine.getLastIndex() >= elementPack.getLastLogIndex()) {
+                return;
+            }
         }
 
         logMachine.addLog(LogDataBO
@@ -388,6 +398,22 @@ public class Node {
                 .term((long) elementPack.getTerm())
                 .data(elementPack.getData())
                 .build());
+
+        if (elementPack.isForward()) {
+            for (Node node : nodeManagement.getFollowerList(serviceId)) {
+                System.out.println("给跟随者发送信息：" + node.serviceId + "，数据：" + elementPack.getData());
+
+                SimpleRpc.sendResponse(node.getServiceId(), "e" + JSON.toJSONString(ElementPack
+                        .builder()
+                        .term(term.get())
+                        .serviceId(serviceId)
+                        .lastLogIndex(logMachine.getLastIndex())
+                        .data(elementPack.getData())
+                        .build()));
+            }
+
+            return;
+        }
 
         //具体应用到状态机的话，等心跳确认/
         ElementPack.ElementPackResponse response = ElementPack.ElementPackResponse

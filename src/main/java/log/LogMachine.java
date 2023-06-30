@@ -11,18 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Data
-public class LogMachine {
+public class LogMachine extends RocksDbHandler{
 
     //数据从节点落库情况
     Map<Integer, List<LogConfirm>> map = new HashMap<>();
 
-    //日志实际处理器
-    private static RocksDbHandler logMachine;
-
     public LogMachine(String serviceId) {
         //初始化状态机 rocksdb
-        logMachine = new RocksDbHandler("LogMachine" + serviceId);
+        super("LogMachine" + serviceId);
     }
 
     /**
@@ -40,7 +36,7 @@ public class LogMachine {
      * @param dataList
      */
     public void resetAllLog(List<LogDataBO> dataList) {
-        logMachine.resetAllElement(dataList.stream().map(JSON::toJSONBytes).collect(Collectors.toList()));
+        resetAllElement(dataList.stream().map(JSON::toJSONBytes).collect(Collectors.toList()));
     }
 
     /**
@@ -74,10 +70,6 @@ public class LogMachine {
         confirmList.stream().filter(item -> item.getServiceId().equals(serviceId)).findFirst().get().setConfirmed(true);
     }
 
-    public long getLastIndex() {
-        return logMachine.getLastIndex();
-    }
-
     /**
      * 输出倒数几个日志
      *
@@ -90,7 +82,7 @@ public class LogMachine {
         long lastIndex = getLastIndex();
 
         while (count > 0 && count <= lastIndex) {
-            resultList.add(JSON.parseObject(logMachine.getElement((int) lastIndex), LogDataBO.class));
+            resultList.add(JSON.parseObject(getElement((int) lastIndex), LogDataBO.class));
 
             count--;
         }
@@ -112,7 +104,7 @@ public class LogMachine {
         int i = 1;
 
         while (i <= lastIndex) {
-            resultList.add(JSON.parseObject(logMachine.getElement(i), LogDataBO.class));
+            resultList.add(JSON.parseObject(getElement(i), LogDataBO.class));
             i++;
         }
 
@@ -126,14 +118,14 @@ public class LogMachine {
      * @return
      */
     public String getLog(Integer index) {
-        return logMachine.getElement(index);
+        return getElement(index);
     }
 
     /**
      * 写入到日志
      */
     public void addLog(LogDataBO dataBO) {
-        logMachine.addElement(JSON.toJSONString(dataBO).getBytes());
+        addElement(JSON.toJSONString(dataBO).getBytes());
     }
 
     /**

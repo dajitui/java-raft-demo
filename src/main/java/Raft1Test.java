@@ -31,7 +31,7 @@ public class Raft1Test {
         Thread.sleep(10000);
 
         //3、选举出leader之后进行+1
-        one.addSomeThing("123");
+        one.addSomeThing("888888");
 
         //等待全部数据复制完
         Thread.sleep(5000);
@@ -45,10 +45,16 @@ public class Raft1Test {
 
         //4、查询随意node里面的值是否一致
         System.out.println("---状态机---");
-        System.out.println(one.getStateMachine().getFsm().getElement(1));
-        System.out.println(two.getStateMachine().getFsm().getElement(1));
-        System.out.println(three.getStateMachine().getFsm().getElement(1));
-        System.out.println(four.getStateMachine().getFsm().getElement(1));
+        System.out.println(one.getStateMachine().getElement(1));
+        System.out.println(two.getStateMachine().getElement(1));
+        System.out.println(three.getStateMachine().getElement(1));
+        System.out.println(four.getStateMachine().getElement(1));
+
+        System.out.println("---日志最后条目---");
+        System.out.println(one.getLogMachine().getLastIndex());
+        System.out.println(two.getLogMachine().getLastIndex());
+        System.out.println(three.getLogMachine().getLastIndex());
+        System.out.println(four.getLogMachine().getLastIndex());
 
         Thread.sleep(2000);
 

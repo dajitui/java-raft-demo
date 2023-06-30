@@ -14,6 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 public class ElementPack {
 
+    private boolean forward;
+
     //谁丢过来的心跳
     private String serviceId;
 
